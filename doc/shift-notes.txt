@@ -1,0 +1,385 @@
+HHHHHHHH LLLLLLLL
+
+00000HHH HHHHHLLL
+
+00000000 00000HHH
+
+xxxxxxHH HHHHHHLL LLLLLL00
+
+xxxxxxxH HHHHHHHL LLLLLLL0
+
+nv-bdizc
+
+  asl a		2
+  rol ah	5
+  php		3
+  asl a		2
+  rol ah	5
+  ; ah has the correct form for the low byte of the result now.
+  pla		4
+  ; now carry has bit 1 of the accumulator result, and N has bit 0.
+  asl a		2
+  adc #0	2
+  and #3	2
+  ldx ah	3
+  sta ah	3
+  txa		2
+
+total:		35
+naive: 		42
+
+combine with add:
+
+asl a 
+rol ah
+php   
+asl a 
+rol ah
+; ah has the correct form for the low byte of the result now.
+pla   
+; now carry has bit 1 of the accumulator result, and N has bit 0.
+asl a 
+adc #0
+and #3
+pha
+lda a2
+adc ah
+sta a4
+pla
+adc a3
+sta a5
+
+combine with eor/ora/and:
+
+asl a 
+rol ah
+php   
+asl a 
+rol ah
+; ah has the correct form for the low byte of the result now.
+pla   
+; now carry has bit 1 of the accumulator result, and N has bit 0.
+asl a 
+adc #0
+and #3
+eor a3  ; for and #imm, can combine with prev insn.
+sta a5
+lda ah
+eor a2
+sta a4
+
+combine with store to ZP:
+
+asl a 
+rol ah
+php   
+asl a 
+rol ah
+; ah has the correct form for the low byte of the result now.
+pla   
+; now carry has bit 1 of the accumulator result, and N has bit 0.
+asl a 
+adc #0
+and #3
+sta a3
+lda ah
+sta a2
+
+
+lsr #5, byteswapped result
+--------------------------
+
+ah       a
+--       -
+HHHHHHHH LLLLLLLL
+
+00000HHH HHHHHLLL
+
+cmp #$80		; 2
+rol ah			; 5
+rol a			; 2
+rol ah			; 5
+rol a			; 2
+rol ah			; 5
+rol a			; 2
+and #7			; 2
+ldx ah			; 3
+sta ah			; 3
+txa			; 2
+
+HHHHHHHL
+	 LLLLLLLH
+HHHHHHLL
+	 LLLLLLHH
+HHHHHLLL
+	 LLLLLHHH
+
+lsr #6 again, using the same trick
+----------------------------------
+
+cmp #$80		; 2
+rol ah			; 5
+rol a			; 2
+rol ah			; 5
+rol a			; 2
+and #3			; 2
+
+
+Left shifts
+===========
+
+asl #1		asl #2		asl #3		asl #4
+------		------		------		------
+asl a		asl a		asl a		asl a
+rol ah		rol ah		rol ah		rol ah
+		asl a		asl a		asl a
+		rol ah		rol ah		rol ah
+				asl a		asl a
+				rol ah		rol ah
+						asl a
+						rol ah
+
+asl #5		asl #6		asl #7		asl #8
+------		------		------		------
+asl a		tax		lsr ah		sta ah
+rol ah		lda ah		ror a		lda #0
+asl a		ror a		sta ah
+rol ah		txa		lda #0
+asl a		ror a		ror a
+rol ah		ror ah		
+asl a		ror a		
+rol ah		ror ah		
+asl a		tax		
+rol ah		lda ah		
+		and #$c0
+		stx ah
+
+asl #9		asl #10		asl #11		asl #12
+------		-------		-------		-------
+asl a		asl a		asl a		asl a
+sta ah		asl a		asl a		asl a
+lda #0		sta ah		asl a		asl a
+		lda #0		sta ah		asl a
+				lda #0		sta ah
+						lda #0
+
+asl #13		asl #14		asl #15		asl #16
+-------		-------		-------		-------
+lsr a		lsr a		lsr a		lda #0
+ror a		ror a		lda #0		sta ah
+ror a		ror a		sta ah
+ror a		and #$c0	ror ah
+and #$e0	sta ah
+sta ah		lda #0
+lda #0
+
+
+HHHHHHHH LLLLLLLL
+HHHLLLLL LLL00000
+
+tax
+lda ah
+ror a
+txa
+ror a
+ror ah
+ror a
+ror ah
+ror a
+ror ah
+tax
+lda ah
+and #$e0
+stx ah
+
+	 HLLLLLLL
+LHHHHHHH
+	 HHLLLLLL
+LLHHHHHH
+	 HHHLLLLL
+LLLHHHHH
+
+lsr a
+ror stmp  HHHHHHHH 0LLLLLLL Lxxxxxxx
+lsr a
+ror stmp  HHHHHHHH 00LLLLLL LLxxxxxx
+lsr a
+ror stmp  HHHHHHHH 000LLLLL LLLxxxxx
+
+
+tax		2
+lda ah		3
+ror a		2
+txa		2
+ror a		2
+ror ah		5
+ror a		2
+ror ah		5
+tax		2
+lda ah		3
+and #$c0	2
+stx ah		3
+
+asl #7
+------
+
+HHHHHHHH LLLLLLLL
+HLLLLLLL L0000000
+
+lsr ah
+ror a
+sta ah
+lda #0
+ror a
+
+asl #13
+-------
+
+sta ah
+lda #0
+lsr ah
+ror a
+lsr ah
+ror a
+lsr ah
+ror a
+sta ah
+lda #0
+
+asl #14
+-------
+HHHHHHHH LLLLLLLL
+LL000000 00000000
+
+lsr a		x7654321
+ror a		0x765432
+ror a		10x76543
+and #$c0	10______
+stz ah
+
+
+asr #1		asr #2		asr #3		asr #4
+------		------		------		------
+ldx ah		ldx ah		ldx ah		ldx ah
+cpx #$80	cpx #$80	cpx #$80	cpx #$80
+ror ah		ror ah		ror ah		ror ah
+ror a		ror a		ror a		ror a
+		cpx #$80	cpx #$80	cpx #$80
+		ror ah		ror ah		ror ah
+		ror a		ror a		ror a
+				cpx #$80	cpx #$80
+				ror ah		ror ah
+				ror a		ror a
+						cpx #$80
+						ror ah
+						ror a
+
+asr #5
+------
+  cmp #$80
+  rol ah	HHHHHHHL
+  rol a			LLLLLLLH
+  rol ah	HHHHHHLL
+  rol a			LLLLLLHH
+  rol ah	HHHHHLLL
+  rol a			LLLLLHHH
+  and #7
+  ldx ah
+  sta ah
+  and #4
+  beq nosignext
+  lda ah
+  ora #$f8
+  sta ah
+nosignext
+  txa
+
+asr #6
+------
+  cmp #$80
+  rol ah	HHHHHHHL
+  rol a			LLLLLLLH
+  rol ah	HHHHHHLL
+  rol a			LLLLLLHH
+  and #3		000000HH
+  ldx ah
+  sta ah
+  and #2
+  beq nosignext
+  lda ah
+  ora #$fc
+  sta ah
+nosignext
+  txa
+
+asr #7
+------
+HHHHHHHH LLLLLLLL
+sssssssH HHHHHHHL
+
+  cmp #$80
+  rol ah	HHHHHHHL  c=original high bit
+  lda #0
+  sbc #0		A = A - 0 - (1 - c)
+  eor #$ff 	C=0	A = A - 0 - 1
+  ldx ah	C=1  A = A - 0 - 0
+  sta ah
+  txa
+
+asr #8
+------
+  ldx #0
+  bit ah
+  bpl pos
+  ldx #$ff
+pos
+  lda ah
+  stx ah
+
+normal:		byteswapped:
+  lda ah	  lda ah
+  tax		  ora #$7f
+  ora #$7f	  bmi neg
+  bmi neg	  lda #0
+  lda #0	neg
+neg
+  sta ah
+  txa
+
+asr #9		asr #10		asr #11		asr #12
+------		-------		-------		-------
+  lda ah	  lda ah	  lda ah	  lda ah
+  tax		  tax		  tax		  tax
+  ora #$7f	  ora #$7f	  ora #$7f	  ora #$7f
+  bmi neg	  bmi neg	  bmi neg	  bmi neg
+  lda #0	  lda #0	  lda #0	  lda #0
+neg		neg		neg		neg
+  sta ah	  sta ah	  sta ah	  sta ah
+  txa		  txa		  txa		  txa
+  cmp #$80	  cmp #$80	  cmp #$80	  cmp #$80
+  ror a		  ror a 	  ror a 	  ror a
+		  cmp #$80	  cmp #$80	  cmp #$80
+		  ror a 	  ror a 	  ror a
+		  		  cmp #$80	  cmp #$80
+				  ror a 	  ror a
+				  		  cmp #$80
+						  ror a
+
+asr #13			asr #14		asr #15/asr #16
+-------			-------		---------------
+HHHHHHHH LLLLLLLL			
+ssssssss sssssHHH
+
+asl ah			asl ah		asl ah
+php			php		lda #0
+lda #0			lda #0		sbc #0
+sbc #0			sbc #0		eor #$ff
+eor #$ff		eor #$ff	sta ah
+tax			tax		
+plp			plp		
+rol a			rol a		
+asl ah			asl ah		
+rol a			rol a
+asl ah			stx ah
+rol a
+stx ah

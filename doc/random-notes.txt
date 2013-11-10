@@ -1,0 +1,234 @@
+pseudo 16-bit registers
+-----------------------
+
+low byte uses the physical register, high byte uses a ZP location.
+
+AH
+XH
+YH
+
+adds
+====
+
+res: zp  op1: zp  op2: zp  clobbers: A
+lda op1
+clc
+adc op2
+sta res
+lda op1+1
+adc op2+1
+sta res+1
+
+res: A  op1: zp  op2: zp
+lda op1
+clc
+adc op2
+save-acc
+lda op1+1
+clc
+adc op2+1
+sta AH
+restore-acc
+
+res: zp  op1: A  op2: zp  clobbers: A
+clc
+adc op2
+sta res
+lda AH
+adc op2+1
+sta res+1
+
+res: A  op1: A  op2: zp
+clc
+adc op2
+save-acc
+lda AH
+adc op2+1
+sta AH
+restore-acc
+
+lsl #1
+======
+
+res: A  op1: A
+
+asl
+rol AH
+
+res: zp  op1: A  clobbers: A,X
+
+ldx AH
+stx res+1
+asl
+rol res+1
+sta res
+
+res: A  op1: zp
+
+lda op1+1
+sta AH
+lda op1
+asl
+rol AH
+
+add #1
+======
+
+res: zp  op1: zp (=res)
+
+  inc op1
+  bne skip
+  inc op1+1
+skip:
+
+res: A  op1: A
+
+  inc a
+  bne skip
+  inc AH
+skip:
+
+res: X  op1: X
+
+  inx
+  bne skip
+  inc XH
+skip:
+
+mov
+===
+
+res: A  src: X
+
+lda AH
+sta XH
+txa
+
+res: A  src: zp
+
+lda src+1
+sta AH
+lda src
+
+res: X  src: abs,y
+
+ldx abs+1,y
+stx XH
+ldx abs,y
+
+res: X  src: (zp),y  clobbers: A
+
+iny
+lda (zp),y
+sta XH
+dey
+lda (zp),y
+tax
+
+prologue/epilogue
+=================
+
+A/X/Y/AH/XH/YH are call-clobbered.
+
+args on software stack can be accessed like:
+
+func:
+  lda ssp
+  sec
+  sbc #<framesize
+  sta ssp
+  lda ssp+1
+  sbc #>framesize
+  sta ssp+1
+
+  ldy #arg
+  lda (ssp),y
+
+  rts
+
+it'd be nice for "software stack"-ABI functions to be able to use a number of ZP locations without worrying about them being clobbered over function calls. That means saving them in the prologue & restoring them in the epilogue.
+
+lda $70 : ldy #0 : sta (ssp),y
+lda $71 : ldy #1 : sta (ssp),y
+lda $72 : ldy #2 : sta (ssp),y
+
+; save to "zero-page" stack
+
+lda zpsp
+sec
+sbc #8
+tax
+lda $77 : sta 7,x
+lda $76 : sta 6,x
+lda $75 : sta 5,x
+lda $74 : sta 4,x
+lda $73 : sta 3,x
+lda $72 : sta 2,x
+lda $71 : sta 1,x
+lda $70 : sta 0,x
+stx zpsp
+
+I'm not sure if that's actually going to be helpful. We really want to avoid wasting 75% of our cycles on boilerplate that doesn't really do anything...
+
+We could also do:
+
+lda $73 : pha
+lda $72 : pha
+lda $71 : pha
+lda $70 : pha
+
+pla : sta $70
+pla : sta $71
+pla : sta $72
+pla : sta $73
+
+pha is faster than zp,x addressing! This is probably fine if we don't need to stack too many locations.
+
+It might be possible to use an overflow check (somehow optional, e.g. a marker on deeply-recursive functions):
+
+  tsx
+  cpx #5
+  bcs no_ovf
+  jsr stack_ovf
+no_ovf:
+  lda $73 : pha
+  lda $72 : pha
+  ...
+
+this would transfer the hardware stack contents somewhere else (the software-controlled stack), and push a cleanup routine onto the top of the fresh stack so that it is called when the current function returns, equivalent of:
+
+foo () {
+  stack_ovf ();
+  
+  return cleanup_stack (rc);
+}
+
+the cleanup routine must return to the original caller, so that info must be extracted from the original stack in stack_ovf.
+
+arg registers
+-------------
+
+Use 8 bytes of registers (e.g.) to pass arguments. These are ZP locations: give symbolic names a0-a7.
+
+  lda #5
+  sta a0
+  lda #7
+  sta a1
+  jsr foo
+
+foo:
+  lda a0
+  ...
+  rts
+
+further arguments passed on a software stack -- or on a "zero page", x-indexed stack? Using a "normal" software stack to start with might limit the amount of invention we need to do in GCC.
+
+So:
+
+lda #foo : sta a0
+...
+lda #bar : sta a7
+lda #baz : ldy #0 : lda (sp),y
+
+having more than 256 bytes of args+locals is likely to be problematic...
+
