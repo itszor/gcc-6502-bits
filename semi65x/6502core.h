@@ -25,7 +25,9 @@ Boston, MA  02110-1301, USA.
 #ifndef CORE6502_HEADER
 #define CORE6502_HEADER
 
+#ifndef SEMI65X
 #include "port.h"
+#endif
 #include "stdio.h"
 
 void DumpRegs(void);

@@ -28,8 +28,14 @@ Boston, MA  02110-1301, USA.
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#ifdef SEMI65X
+#include "semi65x.h"
+#endif
 
 #include "6502core.h"
+#ifndef SEMI65X
 #include "beebmem.h"
 #include "beebsound.h"
 #include "disc8271.h"
@@ -50,6 +56,7 @@ Boston, MA  02110-1301, USA.
 #include "ide.h"
 #include "debug.h"
 #include "Arm.h"
+#endif
 
 #ifdef WIN32
 #define INLINE inline
@@ -241,7 +248,9 @@ void SyncIO(void)
 	{
 		Cycles++;
 		IOCycles = 1;
+#ifndef SEMI65X
 		PollVIAs(1);
+#endif
 	}
 	else
 	{
@@ -252,21 +261,27 @@ void AdjustForIORead(void)
 {
 	Cycles++;
 	IOCycles += 1;
+#ifndef SEMI65X
 	PollVIAs(1);
+#endif
 }
 void AdjustForIOWrite(void)
 {
 	Cycles++;
 	IOCycles += 1;
+#ifndef SEMI65X
 	PollVIAs(1);
 	DoIntCheck();
+#endif
 }
 /*----------------------------------------------------------------------------*/
 void AdvanceCyclesForMemRead(void)
 {
 	// Advance VIAs to point where mem read happens
 	Cycles += CyclesToMemRead[CurrentInstruction];
+#ifndef SEMI65X
 	PollVIAs(CyclesToMemRead[CurrentInstruction]);
+#endif
 
 	// Check if interrupt should be taken if instruction does
 	// a read but not a write (write instructions checked below).
@@ -280,7 +295,9 @@ void AdvanceCyclesForMemWrite(void)
 {
 	// Advance VIAs to point where mem write happens
 	Cycles += CyclesToMemWrite[CurrentInstruction];
+#ifndef SEMI65X
 	PollVIAs(CyclesToMemWrite[CurrentInstruction]);
+#endif
 
 	DoIntCheck();
 }
@@ -418,11 +435,15 @@ INLINE static void ASLInstrHandler(int16 address) {
   unsigned char oldVal,newVal;
   oldVal=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,oldVal);
   newVal=(((unsigned int)oldVal)<<1) & 254;
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,newVal);
   SetPSRCZN((oldVal & 128)>0, newVal==0,newVal & 128);
 } /* ASLInstrHandler */
@@ -508,6 +529,7 @@ INLINE static void BPLInstrHandler(void) {
 }; /* BPLInstrHandler */
 
 INLINE static void BRKInstrHandler(void) {
+#ifndef SEMI65X
   char errstr[250];
   if (CPUDebug) {
   sprintf(errstr,"BRK Instruction at 0x%04x after %i instructions. ACCON: 0x%02x ROMSEL: 0x%02x",ProgramCounter,InstrCount,ACCCON,PagedRomReg);
@@ -515,6 +537,7 @@ INLINE static void BRKInstrHandler(void) {
   //fclose(InstrLog);
   exit(1); 
   }
+#endif
   PushWord(ProgramCounter+1);
   SetPSR(FlagB,0,0,0,0,1,0,0); /* Set B before pushing */
   Push(PSR);
@@ -563,11 +586,15 @@ INLINE static void DECInstrHandler(int16 address) {
   unsigned char val;
   val=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,val);
   val=(val-1);
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,val);
   SetPSRZN(val);
 } /* DECInstrHandler */
@@ -591,11 +618,15 @@ INLINE static void INCInstrHandler(int16 address) {
   unsigned char val;
   val=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,val);
   val=(val+1) & 255;
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,val);
   SetPSRZN(val);
 } /* INCInstrHandler */
@@ -627,7 +658,7 @@ INLINE static void JSRInstrHandler(int16 address) {
 	  *pcptr=0;
 	  fprintf(osclilog,"%s\n",pcbuf);
   }
-  /*if (ProgramCounter==0xffdd) {
+  if (ProgramCounter==0xffdd) {
 	  char errstr[250];
 	  sprintf(errstr,"OSFILE called\n");
 	  MessageBox(GETHWND,errstr,WindowTitle,MB_OKCANCEL|MB_ICONERROR);
@@ -654,11 +685,15 @@ INLINE static void LSRInstrHandler(int16 address) {
   unsigned char oldVal,newVal;
   oldVal=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,oldVal);
   newVal=(((unsigned int)oldVal)>>1) & 127;
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,newVal);
   SetPSRCZN((oldVal & 1)>0, newVal==0,0);
 } /* LSRInstrHandler */
@@ -680,12 +715,16 @@ INLINE static void ROLInstrHandler(int16 address) {
   unsigned char oldVal,newVal;
   oldVal=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,oldVal);
   newVal=((unsigned int)oldVal<<1) & 254;
   newVal+=GETCFLAG;
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,newVal);
   SetPSRCZN((oldVal & 128)>0,newVal==0,newVal & 128);
 } /* ROLInstrHandler */
@@ -704,12 +743,16 @@ INLINE static void RORInstrHandler(int16 address) {
   unsigned char oldVal,newVal;
   oldVal=ReadPaged(address);
   Cycles+=1;
+#ifndef SEMI65X
   PollVIAs(1);
+#endif
   WritePaged(address,oldVal);
   newVal=((unsigned int)oldVal>>1) & 127;
   newVal+=GETCFLAG*128;
   Cycles+=CyclesToMemWrite[CurrentInstruction] - 1;
+#ifndef SEMI65X
   PollVIAs(CyclesToMemWrite[CurrentInstruction] - 1);
+#endif
   WritePaged(address,newVal);
   SetPSRCZN(oldVal & 1,newVal==0,newVal & 128);
 } /* RORInstrHandler */
@@ -1066,7 +1109,9 @@ void Init6502core(void) {
   NMILock=0;
 } /* Init6502core */
 
+#ifndef SEMI65X
 #include "via.h"
+#endif
 
 /*-------------------------------------------------------------------------*/
 void DoInterrupt(void) {
@@ -1165,12 +1210,14 @@ void Exec6502Instruction(void) {
 			Dis6502();
 		}
 
+#ifndef SEMI65X
 		z80_execute();
 
 		if (Enable_Arm)
 		{
 			arm->exec(4);
 		}
+#endif
 
 #ifdef M512COPRO_ENABLED
 		if (Tube186Enabled)
@@ -1185,10 +1232,12 @@ void Exec6502Instruction(void) {
 		BadCount=0;
 		IntDue = false;
 
+#ifndef SEMI65X
 		// Check for WRCHV, send char to speech output
 		if (mainWin->m_TextToSpeechEnabled &&
 			ProgramCounter == (WholeRam[0x20e] + (WholeRam[0x20f] << 8)))
 			mainWin->SpeakChar(Accumulator);
+#endif
 
 		/* Read an instruction and post inc program couter */
 		OldPC=ProgramCounter;
@@ -1411,11 +1460,15 @@ void Exec6502Instruction(void) {
 				*pcptr=0;
 				fprintf(osclilog,"%s\n",pcbuf);
 				}
-				/*if (ProgramCounter==0xffdd) {
+				if (ProgramCounter==0xffdd) {
 				char errstr[250];
 				sprintf(errstr,"OSFILE called\n");
 				MessageBox(GETHWND,errstr,WindowTitle,MB_OKCANCEL|MB_ICONERROR);
 				}*/
+#ifdef SEMI65X
+				if (ProgramCounter == 0)
+				  exit (Accumulator);
+#endif
 				break;
 			case 0x4d:
 				EORInstrHandler(AbsAddrModeHandler_Data());
@@ -2248,8 +2301,10 @@ void Exec6502Instruction(void) {
 		Cycles += CyclesTable[CurrentInstruction] -
 			CyclesToMemRead[CurrentInstruction] - CyclesToMemWrite[CurrentInstruction];
 
+#ifndef SEMI65X
 		PollVIAs(Cycles - ViaCycles);
 		PollHardware(Cycles);
+#endif
 
 		// Check for IRQ
 		DoIntCheck();
@@ -2260,7 +2315,9 @@ void Exec6502Instruction(void) {
 			CyclesToInt = NO_TIMER_INT_DUE;
 			DoInterrupt();
 			PollHardware(IRQCycles);
+#ifndef SEMI65X
 			PollVIAs(IRQCycles);
+#endif
 			IRQCycles=0;
 		}
 
@@ -2270,17 +2327,22 @@ void Exec6502Instruction(void) {
 			NMIStatus &= ~(1<<nmi_econet);
 			DoNMI();
 			PollHardware(IRQCycles);
+#ifndef SEMI65X
 			PollVIAs(IRQCycles);
+#endif
 			IRQCycles=0;
 		}
 		OldNMIStatus=NMIStatus;
 
+#ifndef SEMI65X
 		if (EnableTube)
 			SyncTubeProcessor();
+#endif
 	}
 } /* Exec6502Instruction */
 
 
+#ifndef SEMI65X
 void PollVIAs(unsigned int nCycles)
 {
 	if (nCycles != 0)
@@ -2294,11 +2356,13 @@ void PollVIAs(unsigned int nCycles)
 		ViaCycles += nCycles;
 	}
 }
+#endif
 
 void PollHardware(unsigned int nCycles)
 {
 	TotalCycles+=nCycles;
 
+#ifndef SEMI65X
 	if (TotalCycles > CycleCountWrap)
 	{
 		TotalCycles -= CycleCountWrap;
@@ -2337,9 +2401,11 @@ void PollHardware(unsigned int nCycles)
 				DebugDisplayTrace(DEBUG_ECONET, true, "Econet: NMI requested but supressed");
 		}
 	}
+#endif
 }
 
 /*-------------------------------------------------------------------------*/
+#ifndef SEMI65X
 void Save6502UEF(FILE *SUEF) {
 	fput16(0x0460,SUEF);
 	fput32(16,SUEF);
@@ -2371,6 +2437,7 @@ void Load6502UEF(FILE *SUEF) {
 	NMILock=fgetc(SUEF);
 	//AtoDTrigger=Disc8271Trigger=AMXTrigger=PrinterTrigger=VideoTriggerCount=TotalCycles+100;
 }
+#endif
 
 /*-------------------------------------------------------------------------*/
 /* Dump state                                                              */
