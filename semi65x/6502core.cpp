@@ -1197,7 +1197,12 @@ void Exec6502Instruction(void) {
 	bool iFlagJustSet;
 
 	loopc=(DebugEnabled ? 1 : 1024); // Makes debug window more responsive
-	for(loop=0;loop<loopc;loop++) {
+#ifndef SEMI65X
+	for(loop=0;loop<loopc;loop++)
+#else
+	do
+#endif
+	{
 		/* Output debug info */
 		if (DebugEnabled && !DebugDisassembler(ProgramCounter,PrePC,Accumulator,XReg,YReg,PSR,StackReg,true))
 		{
@@ -2337,8 +2342,10 @@ void Exec6502Instruction(void) {
 #ifndef SEMI65X
 		if (EnableTube)
 			SyncTubeProcessor();
-#endif
 	}
+#else
+	} while (0);
+#endif
 } /* Exec6502Instruction */
 
 

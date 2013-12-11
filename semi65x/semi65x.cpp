@@ -112,6 +112,7 @@ main (int argc, char* argv[])
       else
         {
 	  FILE *f;
+	  int readbytes;
 	  
 	  if (stat (argv[arg], &statbuf) != 0)
 	    {
@@ -133,7 +134,10 @@ main (int argc, char* argv[])
 	      exit (1);
 	    }
 	  
-	  fread (&WholeRam[load_addr], 1, statbuf.st_size, f);
+	  readbytes = fread (&WholeRam[load_addr], 1, statbuf.st_size, f);
+
+	  if (verbose)
+	    fprintf (stderr, "Read %d bytes to 0x%.4x\n", readbytes, load_addr);
 	  
 	  fclose (f);
 	}
@@ -162,7 +166,8 @@ main (int argc, char* argv[])
       if (trace)
         {
 	  extern int ProgramCounter;
-	  fprintf (stderr, "pc: %.4x\n", ProgramCounter);
+	  fprintf (stderr, "pc: %.4x (%.2x)\n", ProgramCounter,
+		   BeebReadMem (ProgramCounter));
 	}
       Exec6502Instruction ();
     }
