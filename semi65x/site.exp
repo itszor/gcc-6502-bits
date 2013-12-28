@@ -1,0 +1,11 @@
+# The master configuration file should be here
+# There is currently not a meaningful default configuration file
+
+global target_list
+
+case "$target_triplet" in {
+  { "6502-*" } {
+    set target_list "semi65x-sim"
+  }
+}
+
