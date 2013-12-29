@@ -1,6 +1,8 @@
 #ifndef _STDIO_H
 #define _STDIO_H 1
 
+#include <stddef.h>
+
 typedef int FILE;
 
 extern FILE *stdin;

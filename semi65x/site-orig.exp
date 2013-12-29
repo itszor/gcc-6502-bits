@@ -1,0 +1,13 @@
+if ![info exists board_dir] {
+  set boards_dir {}
+}
+lappend boards_dir "BOARD_DIR_LOCATION"
+
+global target_list
+
+case "$target_triplet" in {
+  { "6502-*" } {
+    set target_list "semi65x-sim"
+  }
+}
+

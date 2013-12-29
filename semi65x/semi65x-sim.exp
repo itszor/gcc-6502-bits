@@ -55,3 +55,5 @@ unset_board_info needs_status_wrapper
 # no clue what to set them to, so I won't.
 set_board_info gdb,nosignals 1
 
+# The simulator's going to crash. Try to make it at least do it quickly.
+set_board_info gcc,timeout 10
