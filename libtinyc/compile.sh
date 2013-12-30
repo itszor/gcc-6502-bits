@@ -1,10 +1,18 @@
 #!/bin/sh
 cd "$(dirname $0)"
 
+C_OBJECTS=(
+  exit
+  abort
+)
+
 # Build tiny C library.
 rm -f *.o libtinyc.a
-6502-gcc -O2 -nostdlib exit.c -c
-ar65 a libtinyc.a exit.o
+for obj in "${C_OBJECTS[@]}"
+do
+  6502-gcc -O2 -nostdlib $obj.c -c
+  ar65 a libtinyc.a $obj.o
+done
 
 # Build tiny maths library.
 rm -f libm.a
