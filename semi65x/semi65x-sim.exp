@@ -57,3 +57,7 @@ set_board_info gdb,nosignals 1
 
 # The simulator's going to crash. Try to make it at least do it quickly.
 set_board_info gcc,timeout 10
+
+# Setting this makes several tests use smaller data structures. Size is
+# arbitrary!
+set_board_info gcc,stack_size 16384
