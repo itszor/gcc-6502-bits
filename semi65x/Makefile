@@ -5,7 +5,7 @@ INCLUDE :=
 LIBPATHS :=
 LD :=		$(CXX)
 
-OBJS :=		semi65x.o 6502core.o
+OBJS :=		disas.o semi65x.o 6502core.o
 
 TARGET :=	semi65x
 

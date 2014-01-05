@@ -6,6 +6,7 @@
 
 #include "semi65x.h"
 #include "6502core.h"
+#include "disas.h"
 
 #define RAMSIZE 65536
 #define IOPORT 0xfff0
@@ -165,9 +166,12 @@ main (int argc, char* argv[])
     {
       if (trace)
         {
-	  extern int ProgramCounter;
-	  fprintf (stderr, "pc: %.4x (%.2x)\n", ProgramCounter,
-		   BeebReadMem (ProgramCounter));
+	  extern int ProgramCounter, Accumulator, XReg, YReg;
+	  extern unsigned char StackReg, PSR;
+	  fprintf (stderr, "PC=%.4x A=%.2x X=%.2x Y=%.2x S=%.2x F=%.2x ",
+		   ProgramCounter, Accumulator, XReg, YReg, StackReg, PSR);
+	  disassemble_insn (stderr, ProgramCounter, &WholeRam[ProgramCounter]);
+	  fprintf (stderr, "\n");
 	}
       Exec6502Instruction ();
     }

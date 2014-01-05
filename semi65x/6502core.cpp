@@ -83,8 +83,8 @@ CycleCountT TotalCycles=0;
 int trace = 0;
 int ProgramCounter;
 int PrePC;
-static int Accumulator,XReg,YReg;
-static unsigned char StackReg,PSR;
+int Accumulator,XReg,YReg;
+unsigned char StackReg,PSR;
 static unsigned char IRQCycles;
 int DisplayCycles=0;
 int SwitchOnCycles=2000000; // Reset delay
