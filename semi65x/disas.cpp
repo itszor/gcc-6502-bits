@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <string>
+
+#include "mapfile.h"
 
 static const char *opcodes[] =
 {
@@ -300,9 +303,14 @@ disassemble_insn (FILE *outfile, unsigned int pc, unsigned char *insn)
   switch (am)
     {
     case RELATIVE:
-      fprintf (outfile, "%s $%.4x", opcodes[opcode],
-	       pc + (signed char) insn[1]);
-      return 2;
+      {
+        int addr = pc + (signed char) insn[1] + 2;
+	const char *symbolic_name = find_symbol (addr).c_str();
+	fprintf (outfile, "%s %s", opcodes[opcode], symbolic_name);
+	if (symbolic_name[0] != '$')
+	  fprintf (outfile, " ($%.4x)", addr);
+	return 2;
+      }
     
     case INDIRECT:
       if ((regname = fancy_name (insn[1])))
@@ -352,9 +360,14 @@ disassemble_insn (FILE *outfile, unsigned int pc, unsigned char *insn)
       return 2;
     
     case ABSOLUTE:
-      fprintf (outfile, "%s $%.4x", opcodes[opcode],
-	       insn[1] + insn[2] * 256);
-      return 3;
+      {
+        int addr = insn[1] + insn[2] * 256;
+	const char *symbolic_name = find_symbol (addr).c_str();
+	fprintf (outfile, "%s %s", opcodes[opcode], symbolic_name);
+	if (symbolic_name[0] != '$')
+	  fprintf (outfile, " ($%.4x)", addr);
+	return 3;
+      }
 
     case ABS_X:
       fprintf (outfile, "%s $%.4x,x", opcodes[opcode],

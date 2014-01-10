@@ -4,9 +4,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <string>
+
 #include "semi65x.h"
 #include "6502core.h"
 #include "disas.h"
+#include "mapfile.h"
 
 #define RAMSIZE 65536
 #define IOPORT 0xfff0
@@ -82,6 +85,7 @@ main (int argc, char* argv[])
   struct stat statbuf;
   bool verbose = false;
   bool trace = false;
+  const char *mapfile = NULL;
 
   MachineType = 1;
 
@@ -110,6 +114,8 @@ main (int argc, char* argv[])
         verbose = true;
       else if (strcmp (argv[arg], "-t") == 0)
 	trace = true;
+      else if (strcmp (argv[arg], "-m") == 0)
+        mapfile = argv[++arg];
       else
         {
 	  FILE *f;
@@ -145,6 +151,9 @@ main (int argc, char* argv[])
 
       arg++;
     }
+  
+  if (mapfile)
+    parse_map (mapfile);
   
   /* Start execution at beginning of the loaded executable if not otherwise
      specified.  */

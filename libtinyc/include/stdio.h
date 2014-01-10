@@ -15,10 +15,12 @@ extern FILE *stderr;
 
 extern int fputc (int, FILE *);
 extern int fputs (const char *, FILE *);
-extern int putc (int, FILE *);
+#define putc (C, F) fputc((C), (F))
 extern int putchar (int);
 extern int puts (const char *);
+extern int vfprintf (FILE *, const char *, va_list ap);
 extern int fprintf (FILE *, const char *, ...);
+extern int printf (const char *, ...);
 extern int fflush (FILE *);
 extern int fseek (FILE *, long, int);
 extern long ftell (FILE *);

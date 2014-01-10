@@ -54,7 +54,10 @@ echo "***************************"
 echo "* Building tiny C library *"
 echo "***************************"
 echo
+set -e
+PATH="$thisdir/prefix/bin:$PATH"
 PREFIX="$thisdir/prefix" libtinyc/compile.sh
+set +e
 mkdir -p "$thisdir/prefix/lib/cc65/cfg"
 install semi65x/semi65x.cfg "$thisdir/prefix/lib/cc65/cfg"
 fi

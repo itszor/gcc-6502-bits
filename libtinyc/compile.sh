@@ -4,7 +4,16 @@ cd "$(dirname $0)"
 C_OBJECTS=(
   exit
   abort
+  stdfiles
+  fputc
+  fputs
+  puts
+  vfprintf
+  fprintf
+  printf
 )
+
+set -e
 
 # Build tiny C library.
 rm -f *.o libtinyc.a

@@ -2,10 +2,10 @@ CXX :=		g++ -DSEMI65X
 CFLAGS =	-g -O3 -Wall $(INCLUDE)
 CXXFLAGS =	-g -O3 -Wall $(INCLUDE)
 INCLUDE :=
-LIBPATHS :=
+LIBS :=		-lboost_regex
 LD :=		$(CXX)
 
-OBJS :=		disas.o semi65x.o 6502core.o
+OBJS :=		mapfile.o disas.o semi65x.o 6502core.o
 
 TARGET :=	semi65x
 
@@ -20,7 +20,7 @@ cleaner: clean
 	rm -f *.d
 
 $(TARGET):	$(OBJS)
-	$(CXX) $(LIBPATHS) $(OBJS) -o $@
+	$(CXX) $(LIBS) $(OBJS) -o $@
 
 %.o:	%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
