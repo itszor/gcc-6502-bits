@@ -10,14 +10,14 @@ static void print_udec (FILE *f, unsigned int val)
 {
 }
 
-static void print_hex (FILE *f, unsigned int val)
+__attribute__((noinline)) static void print_hex (FILE *f, unsigned int val)
 {
   unsigned char seen_nonzero = 0;
   int i;
   
   for (i = 3; i >= 0; i--)
     {
-      unsigned char nybble = val >> 12;
+      unsigned char nybble = (val >> 12) & 0xf;
       
       if (nybble > 0 || seen_nonzero)
 	fputc (nybble < 10 ? nybble + '0' : nybble - 10 + 'a', f);
