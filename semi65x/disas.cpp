@@ -45,7 +45,7 @@ static const char *opcodes[] =
   "cpy", "cmp", "$c2", "$c3", "cpy", "cmp", "dec", "$c7",
   "iny", "cmp", "dex", "$cb", "cpy", "cmp", "dec", "$cf",
   /* 0xd0 */
-  "bne", "cmp", "cmp", "$d3", "$d4", "cmp", "dec", "$d7"
+  "bne", "cmp", "cmp", "$d3", "$d4", "cmp", "dec", "$d7",
   "cld", "cmp", "phx", "$db", "$dc", "cmp", "dec", "$df",
   /* 0xe0 */
   "cpx", "sbc", "$e2", "$e3", "cpx", "sbc", "inc", "$e7",
@@ -299,6 +299,8 @@ disassemble_insn (FILE *outfile, unsigned int pc, unsigned char *insn)
     default:
       ;
     }
+
+  /*fprintf (outfile, "(%.2x) ", opcode);*/
 
   switch (am)
     {
