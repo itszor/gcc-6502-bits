@@ -11,6 +11,15 @@ C_OBJECTS=(
   vfprintf
   fprintf
   printf
+  memset
+  memcpy
+  memcmp
+  strcmp
+  strlen
+  strcpy
+  memmove
+  strncmp
+  strncpy
 )
 
 set -e

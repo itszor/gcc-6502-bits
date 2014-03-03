@@ -2,12 +2,31 @@
 
 #include "stdio.h"
 
-static void print_sdec (FILE *f, int val)
-{
-}
-
 static void print_udec (FILE *f, unsigned int val)
 {
+  char digits[5];
+  int c = 0;
+  
+  do
+    {
+      digits[c++] = val % 10;
+      val = val / 10;
+    }
+  while (val > 0);
+  
+  for (--c; c >= 0; c--)
+    fputc (digits[c] + '0', f);
+}
+
+static void print_sdec (FILE *f, int val)
+{
+  if (val < 0)
+    {
+      fputc ('-', f);
+      print_udec (f, -val);
+    }
+  else
+    print_udec (f, val);
 }
 
 static void print_hex (FILE *f, unsigned int val)
@@ -51,6 +70,13 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	      {
 	        unsigned int val = va_arg (ap, unsigned int);
 		print_udec (f, val);
+	      }
+	      break;
+
+	    case 's':
+	      {
+		unsigned char *str = va_arg (ap, char *);
+		fputs (str, f);
 	      }
 	      break;
 
