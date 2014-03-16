@@ -18,7 +18,7 @@ static const char *opcodes[] =
   "bmi", "and", "and", "$33", "bit", "and", "rol", "$37",
   "sec", "and", "dec", "$3b", "bit", "and", "rol", "$3f",
   /* 0x40 */
-  "rti", "eor", "$42", "$43", "bit", "and", "rol", "$47",
+  "rti", "eor", "$42", "$43", "bit", "eor", "lsr", "$47",
   "pha", "eor", "lsr", "$4b", "jmp", "eor", "lsr", "$4f",
   /* 0x50 */
   "bvc", "eor", "eor", "$53", "$54", "eor", "lsr", "$57",

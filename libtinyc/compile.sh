@@ -1,6 +1,10 @@
 #!/bin/sh
 cd "$(dirname $0)"
 
+ASM_OBJECTS=(
+  ftoa
+)
+
 C_OBJECTS=(
   exit
   abort
@@ -26,6 +30,12 @@ set -e
 
 # Build tiny C library.
 rm -f *.o libtinyc.a
+for obj in "${ASM_OBJECTS[@]}"
+do
+  6502-gcc -nostdlib $obj.S -c
+  ar65 a libtinyc.a $obj.o
+done
+
 for obj in "${C_OBJECTS[@]}"
 do
   6502-gcc -O2 -nostdlib $obj.c -c

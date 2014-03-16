@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 /***
 
@@ -34,7 +35,7 @@ static sftype
 repack (uint64_t mant, uint16_t exp, char sign)
 {
   mant = mant >> 8;
-  assert (mant & 0x800000);
+  //assert (mant & 0x800000);
   return (mant & 0x7fffff) | ((sign & 1) << 23) | ((exp & 0xff) << 24);
 }
 
@@ -79,7 +80,6 @@ static void
 mul10 (void)
 {
   s_mant *= 10;
-  //s_exp++;
 
   while ((s_mant & ~0xffffffffull) != 0)
     {
@@ -125,6 +125,7 @@ fp_add (sftype a, sftype b)
   int16_t b_exp = b >> 24;
   uint32_t a_mant = a & 0x7fffff;
   uint32_t b_mant = b & 0x7fffff;
+  bool subtract = false;
   
   if (a_exp != 0)
     a_mant |= 0x800000;
@@ -132,15 +133,41 @@ fp_add (sftype a, sftype b)
   if (b_exp != 0)
     b_mant |= 0x800000;
   
-  if (a_sign != b_sign)
-    abort ();
+  if (a_sign == b_sign)
+    ;
+  else if (b_sign)
+    {
+      /* A - B.  */
+      subtract = true;
+      b_sign = false;
+    }
+  else
+    /* -A + B == B - A.  */
+    return fp_add (b, a);
   
   if (a_exp > b_exp)
     {
       if (a_exp > b_exp + 23)
         return a;
 
-      a_mant += b_mant >> (a_exp - b_exp);
+      if (subtract)
+        {
+	  a_mant -= b_mant >> (a_exp - b_exp);
+	  
+	  if (a_mant & 0x80000000)
+	    {
+	      a_mant = -a_mant;
+	      a_sign = !a_sign;
+	    }
+	  
+	  while ((a_mant & 0xff800000) == 0)
+	    {
+	      a_mant <<= 1;
+	      a_exp--;
+	    }
+	}
+      else
+	a_mant += b_mant >> (a_exp - b_exp);
 
       while ((a_mant & 0xff000000) != 0)
         {
@@ -152,11 +179,32 @@ fp_add (sftype a, sftype b)
     }
   else
     {
-      if (b_exp > a_exp + 23)
-        return b;
-      
-      b_mant += a_mant >> (b_exp - a_exp);
-      
+      if (subtract)
+        {
+	  b_mant -= a_mant >> (b_exp - a_exp);
+	  
+	  b_sign = !b_sign;
+	  
+	  if (b_mant & 0x80000000)
+	    {
+	      b_mant = -b_mant;
+	      b_sign = !b_sign;
+	    }
+	  
+	  while ((b_mant & 0xff800000) == 0)
+	    {
+	      b_mant <<= 1;
+	      b_exp--;
+	    }
+	}
+      else
+        {
+	  if (b_exp > a_exp + 23)
+            return b;
+
+	  b_mant += a_mant >> (b_exp - a_exp);
+	}
+
       while ((b_mant & 0xff000000) != 0)
         {
 	  b_mant >>= 1;
@@ -167,6 +215,68 @@ fp_add (sftype a, sftype b)
     }
 }
 
+sftype
+fp_sub (sftype a, sftype b)
+{
+  return fp_add (a, b ^ 0x800000);
+}
+
+sftype
+fp_mul (sftype a, sftype b)
+{
+  bool a_sign = (a & 0x800000) != 0;
+  bool b_sign = (b & 0x800000) != 0;
+  int16_t a_exp = a >> 24;
+  int16_t b_exp = b >> 24;
+  uint32_t a_mant = a & 0x7fffff;
+  uint32_t b_mant = b & 0x7fffff;
+  uint64_t res;
+  
+  if (a_exp != 0)
+    a_mant |= 0x800000;
+
+  if (b_exp != 0)
+    b_mant |= 0x800000;
+  
+  res = ((uint64_t) a_mant * b_mant) >> 23;
+    
+  while ((res & ~0xffffffull) != 0)
+    {
+      res >>= 1;
+      a_exp++;
+    }
+  
+  return repack (res << 8, a_exp + b_exp - 127, a_sign ^ b_sign);
+}
+
+sftype
+fp_div (sftype a, sftype b)
+{
+  bool a_sign = (a & 0x800000) != 0;
+  bool b_sign = (b & 0x800000) != 0;
+  int16_t a_exp = a >> 24;
+  int16_t b_exp = b >> 24;
+  uint32_t a_mant = a & 0x7fffff;
+  uint32_t b_mant = b & 0x7fffff;
+  uint64_t res;
+  
+  if (a_exp != 0)
+    a_mant |= 0x800000;
+
+  if (b_exp != 0)
+    b_mant |= 0x800000;
+  
+  res = ((uint64_t) a_mant << 23) / b_mant;
+  
+  while ((res & 0xff800000) == 0)
+    {
+      res <<= 1;
+      a_exp--;
+    }
+  
+  return repack (res << 8, a_exp - b_exp + 127, a_sign ^ b_sign);
+}
+
 void
 fp_add_s (uint64_t b_mant, int16_t b_exp, bool b_sign)
 {
@@ -175,6 +285,8 @@ fp_add_s (uint64_t b_mant, int16_t b_exp, bool b_sign)
       if (s_exp > b_exp + 31)
         return;
 
+      printf ("%.8llx\n", (long long) s_mant);
+      printf ("%.8llx\n", (long long) (b_mant >> (s_exp - b_exp)));
       s_mant += b_mant >> (s_exp - b_exp);
 
       while ((s_mant & ~0xffffffffull) != 0)
@@ -185,6 +297,7 @@ fp_add_s (uint64_t b_mant, int16_t b_exp, bool b_sign)
     }
   else
     {
+      abort();
       if (b_exp > s_exp + 31)
         goto out;
       
@@ -216,18 +329,26 @@ fp_print (FILE *f, sftype x)
 
   unpack (float_to_sftype (5.0));
   for (i = 0; i < sigfigs; i++)
-    div10 ();
+    {
+      printf ("%.8x\n", (int) s_mant);
+      div10 ();
+    }
 
   bias_mant = s_mant;
   bias_exp = s_exp;
-  bias_sign = s_sign;
+  printf ("bias: %.2x\n", (int) bias_exp);
     
   unpack (x);
 
+  bias_sign = s_sign;
+
+  if (s_sign)
+    output[optr++] = '-';
+
   if (s_exp == 0 && s_mant == 0)
     {
-      fprintf (f, "0");
-      return;
+      strcpy (&output[optr], "0");
+      goto do_print;
     }
 
   dec_exp = 0;
@@ -305,7 +426,8 @@ fp_print (FILE *f, sftype x)
       output[optr++] = 'E';
       optr += sprintf (&output[optr], "%d", dec_exp);
     }
-  
+
+do_print:
   fputs (output, f);
 }
 
@@ -315,7 +437,7 @@ int main (void)
   float q;
   int i;
   
-  fp_print (stdout, float_to_sftype (1.0));
+/*  fp_print (stdout, float_to_sftype (1.0));
   fputc ('\n', stdout);
 
   fp_print (stdout, float_to_sftype (1.001));
@@ -328,12 +450,12 @@ int main (void)
   fputc ('\n', stdout);
 
   fp_print (stdout, float_to_sftype (10));
-  fputc ('\n', stdout);
+  fputc ('\n', stdout);*/
   
   fp_print (stdout, float_to_sftype (1.1));
   fputc ('\n', stdout);
 
-  fp_print (stdout, float_to_sftype (100));
+/*  fp_print (stdout, float_to_sftype (100));
   fputc ('\n', stdout);
 
   fp_print (stdout, float_to_sftype (135));
@@ -357,6 +479,9 @@ int main (void)
   fp_print (stdout, float_to_sftype (16777216));
   fputc ('\n', stdout);
 
+  fp_print (stdout, float_to_sftype (-7.33));
+  fputc ('\n', stdout);
+
   for (i = 0; i < 30; i++)
     {
       fp_print (stdout, float_to_sftype ((float) 1.5 + i / 10.0));
@@ -370,4 +495,43 @@ int main (void)
       fp_print (stdout, float_to_sftype (rnd));
       fputc ('\n', stdout);
     }
+  
+  fp_print (stdout, fp_add (float_to_sftype (1.0), float_to_sftype (2.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (1.0), float_to_sftype (-2.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (-1.0), float_to_sftype (-2.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (-1.0), float_to_sftype (2.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (2.0), float_to_sftype (1.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (2.0), float_to_sftype (-1.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (-2.0), float_to_sftype (-1.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_add (float_to_sftype (-2.0), float_to_sftype (1.0)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_sub (float_to_sftype (10.0), float_to_sftype (10.254)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_mul (float_to_sftype (0.05), float_to_sftype (-999)));
+  fputc ('\n', stdout);
+
+  fp_print (stdout, fp_div (float_to_sftype (1.3333), float_to_sftype (0.125)));
+  fputc ('\n', stdout);
+  
+  fp_print (stdout, 0x81200000);
+  fputc ('\n', stdout);
+
+  fp_print (stdout, 0x7e800000);
+  fputc ('\n', stdout);*/
 }

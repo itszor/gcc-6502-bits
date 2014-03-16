@@ -2,6 +2,8 @@
 
 #include "stdio.h"
 
+#define M65X_FLOAT_PRINT
+
 static void print_udec (FILE *f, unsigned int val)
 {
   char digits[5];
@@ -48,6 +50,19 @@ static void print_hex (FILE *f, unsigned int val)
     }
 }
 
+#ifdef M65X_FLOAT_PRINT
+static void
+print_float (FILE *f, float x)
+{
+  signed char exp;
+  char output[16];
+  exp = __m65x_ftoa (&output[0], x);
+  fputs (output, f);
+  if (exp != 0)
+    fprintf (f, "E%d", exp);
+}
+#endif
+
 #ifndef MAIN
 int vfprintf (FILE *f, const char *fmt, va_list ap)
 {
@@ -86,7 +101,15 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 		print_hex (f, val);
 	      }
 	      break;
-	    
+
+#ifdef M65X_FLOAT_PRINT
+	    case 'f':
+	      {
+		float val = va_arg (ap, double);
+		print_float (f, val);
+	      }
+	      break;
+#endif
 	    default:
 	      ;
 	    }
