@@ -76,19 +76,18 @@ enum addrmode
 
 static const char *softregs[] =
 {
-  "_ah", "_ah2", "_ah3",
-  "_xh", "_xh2", "_xh3",
-  "_yh", "_yh2", "_yh3",
   "_sp0", "_sp1", "_fp0", "_fp1",
   "_r0", "_r1", "_r2", "_r3", "_r4", "_r5", "_r6", "_r7",
   "_s0", "_s1", "_s2", "_s3", "_s4", "_s5", "_s6", "_s7",
   "_tmp0", "_tmp1"
 };
 
+static int softreg_base = 0;
+
 static const char *fancy_name (int regnum)
 {
-  if (regnum >= 0x70 && regnum <= 0x8e)
-    return softregs[regnum - 0x70];
+  if (regnum >= softreg_base && regnum < softreg_base + 22)
+    return softregs[regnum - softreg_base];
 
   return NULL;
 }

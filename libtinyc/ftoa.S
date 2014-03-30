@@ -1,55 +1,21 @@
-        .define _ah $70
-        .define _ah2 $71
-        .define _ah3 $72
-        .define _xh $73
-        .define _xh2 $74
-        .define _xh3 $75
-        .define _yh $76
-        .define _yh2 $77
-        .define _yh3 $78
-        .define _sp0 $79
-        .define _sp1 $7a
-        .define _fp0 $7b
-        .define _fp1 $7c
-        .define _r0 $7d
-        .define _r1 $7e
-        .define _r2 $7f
-        .define _r3 $80
-        .define _r4 $81
-        .define _r5 $82
-        .define _r6 $83
-        .define _r7 $84
-        .define _s0 $85
-        .define _s1 $86
-        .define _s2 $87
-        .define _s3 $88
-        .define _s4 $89
-        .define _s5 $8a
-        .define _s6 $8b
-        .define _s7 $8c
-        .define _tmp0 $8d
-        .define _tmp1 $8e
+        .importzp _sp0, _sp1, _fp0, _fp1
+        .importzp _r0, _r1, _r2, _r3, _r4, _r5, _r6, _r7
+        .importzp _s0, _s1, _s2, _s3, _s4, _s5, _s6, _s7
+        .importzp _tmp0, _tmp1
+
+	.importzp _m65x_fpe0_mant, _m65x_fpe0_exp, _m65x_fpe0_sign
+	.importzp _m65x_fpe1_mant, _m65x_fpe1_exp, _m65x_fpe1_sign
+	
+#define s_mant _m65x_fpe0_mant
+#define s_exp _m65x_fpe0_exp
+#define s_sign _m65x_fpe0_sign
+
+#define s2_mant _m65x_fpe1_mant
+#define s2_exp _m65x_fpe1_exp
+#define s2_sign _m65x_fpe1_sign
+
 
 	.segment "ZEROPAGE"
-	; The stored mantissa consists of a byte for rounding, three bytes for
-	; the actual value (with explicit leading bit), and one byte for
-	; temporarily holding denormalized high bits during operations.
-s_mant:
-	.res 5,0
-s_exp:
-	.word 0
-s_sign:
-	.byte 0
-
-	; A secondary (unpacked) floating point number, for use as the second
-	; operand in calculations.
-s2_mant:
-	.res 5,0
-s2_exp:
-	.byte 0
-s2_sign:
-	.byte 0
-
 bufptr:
 	.word 0
 

@@ -75,6 +75,19 @@ Sleep (int)
   /* Do nothing.  */
 }
 
+void
+print_flags (FILE *f, int flags)
+{
+  fputc (flags & FlagN ? 'N' : 'n', f);
+  fputc (flags & FlagV ? 'V' : 'v', f);
+  fputc ('-', f);
+  fputc (flags & FlagB ? 'B' : 'b', f);
+  fputc (flags & FlagD ? 'D' : 'd', f);
+  fputc (flags & FlagI ? 'I' : 'i', f);
+  fputc (flags & FlagZ ? 'Z' : 'z', f);
+  fputc (flags & FlagC ? 'C' : 'c', f);
+}
+
 int
 main (int argc, char* argv[])
 {
@@ -177,8 +190,10 @@ main (int argc, char* argv[])
         {
 	  extern int ProgramCounter, Accumulator, XReg, YReg;
 	  extern unsigned char StackReg, PSR;
-	  fprintf (stderr, "PC=%.4x A=%.2x X=%.2x Y=%.2x S=%.2x F=%.2x ",
-		   ProgramCounter, Accumulator, XReg, YReg, StackReg, PSR);
+	  fprintf (stderr, "PC=%.4x A=%.2x X=%.2x Y=%.2x S=%.2x F=",
+		   ProgramCounter, Accumulator, XReg, YReg, StackReg);
+	  print_flags (stderr, PSR);
+	  fputc (' ', stderr);
 	  disassemble_insn (stderr, ProgramCounter, &WholeRam[ProgramCounter]);
 	  fprintf (stderr, "\n");
 	}
