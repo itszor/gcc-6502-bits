@@ -13,6 +13,10 @@ Debian system you should also have all the prerequisites for building GCC instal
 
 or similar.
 
+For semi65x (the included simulator), you also need Boost development libraries:
+
+    # apt-get install libboost-dev libboost-regex-dev
+
 Work in progress
 ----------------
 
