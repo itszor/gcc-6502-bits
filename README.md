@@ -16,7 +16,7 @@ or similar.
 Work in progress
 ----------------
 
-So far you can only build binaries for the included simulator (sim65x). Support for real machines may appear to due
+So far you can only build binaries for the included simulator (sim65x). Support for real machines may appear in due
 course. (This is a matter of adding linker scripts and OS support as appropriate.)
 
 Building
