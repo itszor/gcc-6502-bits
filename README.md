@@ -9,9 +9,13 @@ Prerequisites
 You need to install cc65 in /usr (so ca65, ld65 and so on are present in /usr/bin/ca65 etc.) before building. On a
 Debian system you should also have all the prerequisites for building GCC installed, e.g.:
 
-    # apt-get build-dep gcc
+    # apt-get build-dep gcc-4.8
 
 or similar.
+
+For semi65x (the included simulator), you also need Boost development libraries:
+
+    # apt-get install libboost-dev libboost-regex-dev
 
 Work in progress
 ----------------
