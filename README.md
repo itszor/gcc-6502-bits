@@ -20,7 +20,7 @@ For semi65x (the included simulator), you also need Boost development libraries:
 Work in progress
 ----------------
 
-So far you can only build binaries for the included simulator (sim65x). Support for real machines may appear in due
+So far you can only build binaries for the included simulator (semi65x). Support for real machines may appear in due
 course. (This is a matter of adding linker scripts and OS support as appropriate.)
 
 Building
