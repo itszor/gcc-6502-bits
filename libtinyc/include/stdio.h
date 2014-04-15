@@ -1,6 +1,7 @@
 #ifndef _STDIO_H
 #define _STDIO_H 1
 
+#include <stdarg.h>
 #include <stddef.h>
 
 typedef int FILE;

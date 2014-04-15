@@ -27,6 +27,10 @@ C_OBJECTS=(
 )
 
 set -e
+set -x
+
+mkdir -p $PREFIX/usr/include
+cp -rf include/* $PREFIX/usr/include
 
 # Build tiny C library.
 rm -f *.o libtinyc.a
@@ -38,7 +42,7 @@ done
 
 for obj in "${C_OBJECTS[@]}"
 do
-  6502-gcc -O2 -nostdlib $obj.c -c
+  6502-gcc -nostdlib -O2 $obj.c -c
   ar65 a libtinyc.a $obj.o
 done
 
@@ -50,5 +54,3 @@ ar65 a libm.a math.o
 mkdir -p $PREFIX/usr/lib
 cp -f libtinyc.a $PREFIX/usr/lib
 cp -f libm.a $PREFIX/usr/lib
-mkdir -p $PREFIX/usr/include
-cp -rf include/* $PREFIX/usr/include
