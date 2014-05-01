@@ -62,7 +62,7 @@ If you built semi65x, you can run GCC regression tests using:
 
     $ ./check.sh
 
-Results will appear in a directory like testresults-$(date)-$(sequence). Results so far (2014-04-16) should look something like:
+Results will appear in a directory like testresults-*date*-*sequence*. Results so far (2014-04-16) should look something like:
 
 ```
                 === gcc Summary ===
