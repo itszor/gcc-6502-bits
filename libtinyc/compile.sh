@@ -1,11 +1,21 @@
 #!/bin/sh
 cd "$(dirname $0)"
 
-ASM_OBJECTS=(
-  ftoa
-)
+if [ ! "$PREFIX" ]; then
+  echo "\$PREFIX must be set to build libtinyc."
+  exit 1
+fi
 
-C_OBJECTS=(
+TARGET=6502
+
+declare -a MULTILIBS
+SAVED_IFS=$IFS
+IFS=$'
+'
+MULTILIBS=( $($TARGET-gcc -print-multi-lib) )
+IFS=$SAVED_IFS
+
+OBJECTS=(
   exit
   abort
   stdfiles
@@ -24,33 +34,105 @@ C_OBJECTS=(
   memmove
   strncmp
   strncpy
+  ftoa
 )
 
 set -e
-set -x
+#set -x
 
-mkdir -p $PREFIX/usr/include
-cp -rf include/* $PREFIX/usr/include
+mkdir -p $PREFIX/$TARGET/usr/include
+cp -rf include/* $PREFIX/$TARGET/usr/include
 
-# Build tiny C library.
-rm -f *.o libtinyc.a
-for obj in "${ASM_OBJECTS[@]}"
-do
-  6502-gcc -nostdlib $obj.S -c
-  ar65 a libtinyc.a $obj.o
+# Return the OS-specific source directory to use for a given multilib "OS" dir
+# given in $1.
+
+machine_specific_dir ()
+{
+  local osdir=$1
+  
+  case "$osdir" in
+    .)
+      echo semi65x
+      ;;
+    bbc*)
+      echo bbc
+      ;;
+    c64)
+      echo c64
+      ;;
+    *)
+      echo "Unknown OS dir: $osdir" 1>&2
+      exit 1
+  esac
+}
+
+# Given a machine (multilib OS dir) in $1 and the name of an object in $2,
+# return the source file to use.  If a machine-specific version is present,
+# use that, else use the default.  Also prefer assembly source over C source
+# if available.
+
+src_for_machine ()
+{
+  local osdir=$1
+  local obj=$2
+  local machinedir
+  machinedir="$(machine_specific_dir "$osdir")"
+  
+  if [ -e "$machinedir/$obj.S" ]; then
+    echo "$machinedir/$obj.S"
+  elif [ -e "$machinedir/$obj.c" ]; then
+    echo "$machinedir/$obj.c"
+  elif [ -e "$obj.S" ]; then
+    echo "$obj.S"
+  elif [ -e "$obj.c" ]; then
+    echo "$obj.c"
+  else
+    echo "No source for '$obj' for $machinedir!" 1>&2
+    exit 1
+  fi
+}
+
+expand_opts ()
+{
+  local opts=$1
+  echo $opts | sed 's/@/ -/g'
+}
+
+for mlib in "${MULTILIBS[@]}"; do
+  osdir="${mlib%;*}"
+  opts="${mlib#*;}"
+  opts=$(expand_opts $opts)
+
+  mkdir -p "$osdir"
+
+  # Build tiny C library.
+  rm -f "$osdir"/*.o "$osdir/libtinyc.a"
+  for obj in "${OBJECTS[@]}"
+  do
+    src="$(src_for_machine "$osdir" "$obj")"
+    case "$src" in
+      *.c)
+        echo "$osdir: compile: $src"
+	;;
+      *.S)
+        echo "$osdir: assemble: $src"
+	;;
+      *)
+        echo "Unknown source type $src"
+	exit 1
+	;;
+    esac
+    $TARGET-gcc -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
+    ar65 a "$osdir/libtinyc.a" "$osdir/$obj.o"
+  done
+
+  # Build tiny maths library.
+  rm -f "$osdir"/libm.a
+  src="$(src_for_machine "$osdir" "math")"
+  $TARGET-gcc -O2 -nostdlib $opts "$src" -c -o "$osdir/math.o"
+  ar65 a "$osdir/libm.a" "$osdir/math.o"
+
+  mkdir -p "$PREFIX/$TARGET/$osdir/usr/lib/"
+  cp -f "$osdir/libtinyc.a" "$PREFIX/$TARGET/$osdir/usr/lib"
+  cp -f "$osdir/libm.a" "$PREFIX/$TARGET/$osdir/usr/lib"
 done
-
-for obj in "${C_OBJECTS[@]}"
-do
-  6502-gcc -nostdlib -O2 $obj.c -c
-  ar65 a libtinyc.a $obj.o
-done
-
-# Build tiny maths library.
-rm -f libm.a
-6502-gcc -O2 -nostdlib math.c -c
-ar65 a libm.a math.o
-
-mkdir -p $PREFIX/usr/lib
-cp -f libtinyc.a $PREFIX/usr/lib
-cp -f libm.a $PREFIX/usr/lib
