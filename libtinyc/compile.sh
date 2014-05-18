@@ -122,7 +122,7 @@ for mlib in "${MULTILIBS[@]}"; do
 	exit 1
 	;;
     esac
-    $TARGET-gcc -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
+    $TARGET-gcc -O2 -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
     ar65 a "$osdir/libtinyc.a" "$osdir/$obj.o"
   done
 
