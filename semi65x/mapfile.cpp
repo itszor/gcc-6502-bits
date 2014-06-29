@@ -115,7 +115,7 @@ parse_map (const char *filename)
 	  break;
 
 	case SEGMENT_LIST:
-          if (line.compare("Exports list:") == 0)
+          if (line.compare("Exports list by name:") == 0)
 	    {
 	      part = EXPORTS_LIST;
 	      seen_separator = false;

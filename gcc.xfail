@@ -132,3 +132,52 @@ FAIL: gcc.c-torture/compile/vector-align-1.c  -O2  (test for excess errors)
 FAIL: gcc.c-torture/compile/vector-align-1.c  -O3 -fomit-frame-pointer  (test for excess errors)
 FAIL: gcc.c-torture/compile/vector-align-1.c  -O3 -g  (test for excess errors)
 FAIL: gcc.c-torture/compile/vector-align-1.c  -Os  (test for excess errors)
+
+# long long isn't long enough
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -O0
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -O1
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -O2
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -Os
+FAIL: gcc.c-torture/execute/20000402-1.c execution,  -Og -g
+
+# recursion too deep (should be tailcall?)
+FAIL: gcc.c-torture/execute/20000412-2.c execution,  -O0
+FAIL: gcc.c-torture/execute/20000412-2.c execution,  -O1
+FAIL: gcc.c-torture/execute/20000412-2.c execution,  -O2
+FAIL: gcc.c-torture/execute/20000412-2.c execution,  -Os
+FAIL: gcc.c-torture/execute/20000412-2.c execution,  -Og -g
+
+# long long isn't long enough
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -O0
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -O1
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -O2
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -Os
+FAIL: gcc.c-torture/execute/20000717-2.c execution,  -Og -g
+
+# Lots of alloca/builtin_return_address calls -- who knows
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -O0
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -O1
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -O2
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -Os
+FAIL: gcc.c-torture/execute/20010122-1.c execution,  -Og -g
+
+# No nested function support
+FAIL: gcc.c-torture/execute/20010209-1.c execution,  -O0
+FAIL: gcc.c-torture/execute/20010209-1.c execution,  -O1
+FAIL: gcc.c-torture/execute/20010209-1.c execution,  -Os
+
+# Not sure.
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O0
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O1
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O2
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O3 -fomit-frame-pointer
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O3 -fomit-frame-pointer -funroll-loops
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -O3 -g
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -Os
+FAIL: gcc.c-torture/execute/20020412-1.c execution,  -Og -g
