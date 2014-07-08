@@ -4,6 +4,7 @@ thisdir="$(readlink -f "$thisdir")"
 cd "$thisdir"
 
 startpos=
+endpos=3
 case "$1" in
   ""|"1")
     startpos=1
@@ -13,6 +14,10 @@ case "$1" in
     ;;
   "3")
     startpos=3
+    ;;
+  *-*)
+    startpos="${1%-*}"
+    endpos="${1#*-}"
     ;;
   *)
     echo "Don't know what '$1' means"
@@ -48,7 +53,7 @@ set +e
 popd
 fi
 
-if [ "$startpos" -le 2 ]; then
+if [ "$startpos" -le 2 ] && [ "$endpos" -ge 2 ]; then
 echo
 echo "***************************"
 echo "* Building tiny C library *"
@@ -68,7 +73,7 @@ mkdir -p "$thisdir/prefix/6502/c64/lib/cc65/cfg"
 install ldscripts/c64.cfg "$thisdir/prefix/6502/c64/lib/cc65/cfg"
 fi
 
-if [ "$startpos" -le 3 ]; then
+if [ "$startpos" -le 3 ] && [ "$endpos" -ge 3 ]; then
 echo
 echo "*****************************"
 echo "* Building stage 2 compiler *"

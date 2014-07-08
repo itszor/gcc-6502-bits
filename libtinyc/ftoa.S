@@ -6,6 +6,8 @@
 	.importzp _m65x_fpe0_mant, _m65x_fpe0_exp, _m65x_fpe0_sign
 	.importzp _m65x_fpe1_mant, _m65x_fpe1_exp, _m65x_fpe1_sign
 	
+	.import _m65x_renormalize_right
+	
 #define s_mant _m65x_fpe0_mant
 #define s_exp _m65x_fpe0_exp
 #define s_sign _m65x_fpe0_sign
@@ -129,24 +131,6 @@ add_s2_mant_to_s:
 	sta s_mant+4
 	rts
 
-renormalize_right:
-	.scope
-	lda s_mant+4
-loop:
-	cmp #0
-	beq done
-	lsr a
-	ror s_mant+3
-	ror s_mant+2
-	ror s_mant+1
-	ror s_mant
-	inc s_exp
-	jmp loop
-done:
-	sta s_mant+4
-	rts
-	.endscope
-
 div10:
 	.scope
 	lda s_exp
@@ -230,7 +214,7 @@ div16:
 	inc s_mant+3
 	:
 	
-	jmp renormalize_right
+	jmp _m65x_renormalize_right
 	.endscope
 
 ensure_less_than_10:
@@ -276,7 +260,7 @@ mul10:
 	sta s2_mant+3
 	
 	jsr add_s2_mant_to_s
-	jmp renormalize_right
+	jmp _m65x_renormalize_right
 	.endscope
 
 add_bias:
@@ -308,7 +292,7 @@ rshift_s2:
 done_shifting:
 
 	jsr add_s2_mant_to_s
-	jmp renormalize_right
+	jmp _m65x_renormalize_right
 out:
 	rts
 	.endscope
