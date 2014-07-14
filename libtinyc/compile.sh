@@ -35,6 +35,7 @@ OBJECTS=(
   strncmp
   strncpy
   ftoa
+  alloc
 )
 
 set -e
