@@ -95,11 +95,16 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	      }
 	      break;
 
+	    case 'p':
 	    case 'x':
 	      {
 	        int val = va_arg (ap, int);
 		print_hex (f, val);
 	      }
+	      break;
+
+	    case '%':
+	      fputc ('%', f);
 	      break;
 
 #ifdef M65X_FLOAT_PRINT
