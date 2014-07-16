@@ -21,16 +21,20 @@ OBJECTS=(
   stdfiles
   fputc
   fputs
+  putchar
   puts
   vfprintf
   fprintf
   printf
+  fflush
   memset
   memcpy
   memcmp
   strcmp
   strlen
   strcpy
+  strchr
+  strrchr
   memmove
   strncmp
   strncpy
