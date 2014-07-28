@@ -5,10 +5,10 @@ strrchr (const char *s, int c)
 {
   char *last = NULL;
 
-  for (; *s != NULL; s++)
+  for (; *s != '\0'; s++)
     {
       if (*s == c)
-        last = s;
+        last = (char *) s;
     }
   
   return last;

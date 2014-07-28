@@ -14,14 +14,18 @@ extern FILE *stderr;
 #define SEEK_CUR 1
 #define SEEK_END 2
 
+extern char __m65x_char_to_file;
+
 extern int fputc (int, FILE *);
 extern int fputs (const char *, FILE *);
 #define putc(C, F) fputc ((C), (F))
 extern int putchar (int);
 extern int puts (const char *);
-extern int vfprintf (FILE *, const char *, va_list ap);
+extern int vfprintf (FILE *, const char *, va_list);
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
+extern int sprintf (char *, const char *, ...);
+extern int vsprintf (char *, const char *, va_list);
 extern int fflush (FILE *);
 extern int fseek (FILE *, long, int);
 extern long ftell (FILE *);

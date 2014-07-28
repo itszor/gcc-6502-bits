@@ -2,6 +2,21 @@
 
 #include "stdio.h"
 
+char __m65x_char_to_file = 1;
+
+static void
+emit_char (int c, FILE *f)
+{
+  if (__m65x_char_to_file)
+    fputc (c, f);
+  else
+    {
+      char **ptr = (char **) f;
+      **ptr = c;
+      (*ptr)++;
+    }
+}
+
 #define M65X_FLOAT_PRINT
 
 static void print_udec (FILE *f, unsigned int val)
@@ -17,14 +32,14 @@ static void print_udec (FILE *f, unsigned int val)
   while (val > 0);
   
   for (--c; c >= 0; c--)
-    fputc (digits[c] + '0', f);
+    emit_char (digits[c] + '0', f);
 }
 
 static void print_sdec (FILE *f, int val)
 {
   if (val < 0)
     {
-      fputc ('-', f);
+      emit_char ('-', f);
       print_udec (f, -val);
     }
   else
@@ -41,7 +56,7 @@ static void print_hex (FILE *f, unsigned int val)
       unsigned char nybble = (val >> 12) & 0xf;
       
       if (nybble > 0 || i == 0 || seen_nonzero)
-	fputc (nybble < 10 ? nybble + '0' : nybble - 10 + 'a', f);
+	emit_char (nybble < 10 ? nybble + '0' : nybble - 10 + 'a', f);
       
       if (nybble != 0)
         seen_nonzero = 1;
@@ -104,7 +119,7 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	      break;
 
 	    case '%':
-	      fputc ('%', f);
+	      emit_char ('%', f);
 	      break;
 
 #ifdef M65X_FLOAT_PRINT
@@ -120,12 +135,16 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	    }
 	}
       else
-        fputc (*fmt, f);
+        emit_char (*fmt, f);
 
       fmt++;
       printed++;
     }
-  
+
+  /* Zero-terminate if printing to string.  */
+  if (!__m65x_char_to_file)
+    emit_char (0, f);
+
   return printed;
 }
 #endif

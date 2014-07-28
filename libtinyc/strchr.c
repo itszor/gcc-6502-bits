@@ -3,10 +3,10 @@
 char *
 strchr (const char *s, int c)
 {
-  for (; *s != NULL; s++)
+  for (; *s != '\0'; s++)
     {
       if (*s == c)
-        return s;
+        return (char *) s;
     }
   
   return NULL;

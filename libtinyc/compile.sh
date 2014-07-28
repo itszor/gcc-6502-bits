@@ -25,7 +25,10 @@ OBJECTS=(
   puts
   vfprintf
   fprintf
+  vprintf
   printf
+  sprintf
+  vsprintf
   fflush
   memset
   memcpy
