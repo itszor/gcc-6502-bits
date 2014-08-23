@@ -66,6 +66,8 @@ static void print_hex (FILE *f, unsigned int val)
 }
 
 #ifdef M65X_FLOAT_PRINT
+extern signed char __m65x_ftoa (char *, float);
+
 static void
 print_float (FILE *f, float x)
 {
@@ -105,7 +107,7 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 
 	    case 's':
 	      {
-		unsigned char *str = va_arg (ap, char *);
+		char *str = va_arg (ap, char *);
 		fputs (str, f);
 	      }
 	      break;
