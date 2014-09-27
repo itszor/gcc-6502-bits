@@ -4,7 +4,7 @@ void *
 memcpy (void *dest, const void *src, size_t n)
 {
   unsigned char *d = dest;
-  unsigned const char *s = src;
+  const unsigned char *s = src;
   unsigned int i;
   
   for (i = 0; i < n; i++)
