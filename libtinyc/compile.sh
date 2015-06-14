@@ -130,14 +130,14 @@ for mlib in "${MULTILIBS[@]}"; do
 	exit 1
 	;;
     esac
-    $TARGET-gcc -O2 -Wall -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
+    $TARGET-gcc -Os -Wall -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
     ar65 a "$osdir/libtinyc.a" "$osdir/$obj.o"
   done
 
   # Build tiny maths library.
   rm -f "$osdir"/libm.a
   src="$(src_for_machine "$osdir" "math")"
-  $TARGET-gcc -O2 -nostdlib $opts "$src" -c -o "$osdir/math.o"
+  $TARGET-gcc -Os -nostdlib $opts "$src" -c -o "$osdir/math.o"
   ar65 a "$osdir/libm.a" "$osdir/math.o"
 
   mkdir -p "$PREFIX/$TARGET/$osdir/usr/lib/"
