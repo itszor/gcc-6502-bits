@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 get_test_results_dir () {
   local base
