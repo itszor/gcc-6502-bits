@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <sstream>
 #include <vector>
 #include <map>
 #include <string>
@@ -41,7 +42,7 @@ find_symbol (int addr)
 
   if (exports.empty() || mi == exports.begin())
     {
-      stringstream ss;
+      std::stringstream ss;
       ss << '$' << std::hex << addr;
       return ss.str();
     }
@@ -52,7 +53,7 @@ find_symbol (int addr)
 	return mi->second;
       else
         {
-	  stringstream ss;
+	  std::stringstream ss;
 	  ss << mi->second << "+" << addr - mi->first;
 	  return ss.str();
 	}
@@ -145,7 +146,7 @@ parse_map (const char *filename)
 	      boost::smatch sm;
 	      if (boost::regex_match(line, sm, two_exports_re))
 	        {
-		  stringstream ss;
+		  std::stringstream ss;
 		  int addr1, addr2;
 
 		  ss << std::hex << sm[2] << ' ' << sm[5];
@@ -156,7 +157,7 @@ parse_map (const char *filename)
 		}
 	      else if (boost::regex_match(line, sm, one_export_re))
 	        {
-		  stringstream ss;
+		  std::stringstream ss;
 		  int addr;
 		  
 		  ss << std::hex << sm[2];

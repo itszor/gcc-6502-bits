@@ -20,7 +20,7 @@ cleaner: clean
 	rm -f *.d
 
 $(TARGET):	$(OBJS)
-	$(CXX) $(LIBS) $(OBJS) -o $@
+	$(CXX) $(OBJS) -o $@ $(LIBS)
 
 %.o:	%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
