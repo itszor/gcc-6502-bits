@@ -17,11 +17,14 @@ For semi65x (the included simulator), you also need Boost development libraries:
 
     # apt-get install libboost-dev libboost-regex-dev
 
+For running the GCC regression tests you will need to have DejaGNU installed:
+
+    # apt-get install dejagnu
+
 Work in progress
 ----------------
 
-So far you can only build binaries for the included simulator (semi65x). Support for real machines may appear in due
-course. (This is a matter of adding linker scripts and OS support as appropriate.)
+This is a work-in-progress compiler, and many bugs remain. You can build code for semi65x (the included simulator), and limited support also exists for Acorn BBC Model B or Master computers (you may see some references to the C64, but that's not properly implemented yet). Adding support for other systems shouldn't be too hard - contact me if you'd like to try that!
 
 Building
 --------
@@ -54,6 +57,22 @@ If you build the enclosed simulator (needs Boost, cd semi65x && make) you can ru
     $ semi65x/semi65x -l 0x200 ./helloworld
     Hello world
     $
+
+To compile for other supported systems, e.g. the BBC Master computer, you can use a command like:
+
+    # 6502-gcc -mmach=bbcmaster -mcpu=65C02 -O2 hello.c -o hello
+
+By default, the compiler will use a software stack that starts at a suitable location for use in MODE 7 (i.e. 0x7BFF downwards). To use another screen mode or stack address, set the stack top at link time like this:
+
+    # 6502-gcc -mmach=bbcmaster -mcpu=65C02 -O2 hello.c -Wl,-D,__STACKTOP__=0x2fff -o hello
+
+The program start address will be set to 0xe00 for the Master, or 0x1900 for the Model B. You can probably use other load addresses if you supply your own linker script.
+
+To obtain a memory map of the final executable from the linker, use a command such as:
+
+    # 6502-gcc [...] -Wl,-m,hello.map
+
+The semi65x simulator can read this map file in order to display symbolic addresses in trace output, which might be helpful for debugging.
 
 Running regression tests
 ------------------------
