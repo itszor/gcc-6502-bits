@@ -31,9 +31,9 @@ Building
 
 Check out this repository, and check out the GCC repository proper as a subdirectory named "gcc-src":
 
-    $ git clone git@github.com:puppeh/gcc-6502-bits.git
+    $ git clone https://github.com/puppeh/gcc-6502-bits.git
     $ cd gcc-6502-bits
-    $ git clone git@github.com:puppeh/gcc-6502.git gcc-src
+    $ git clone https://github.com/puppeh/gcc-6502.git gcc-src
 
 Now build by running the build.sh script, e.g. as:
 
