@@ -35,6 +35,7 @@ esac
 DEBUG_FLAGS="-O0 -g"
 MAKETARGET=all
 INSTALLTARGET=install
+PARALLELISM="-j 4"
 
 if [ "$startpos" -le 1 ]; then
 rm -rf gcc-build
@@ -47,7 +48,7 @@ echo
 pushd gcc-build
 ../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=/usr/bin/ca65 --with-ld=/usr/bin/ld65 --without-headers --with-newlib --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl
 set -e
-make -j 8 BOOT_CFLAGS="$DEBUG_FLAGS" CFLAGS="$DEBUG_FLAGS" CXXFLAGS="$DEBUG_FLAGS" AR_FOR_TARGET="$thisdir/wrappers/6502-ar" RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $MAKETARGET
+make $PARALLELISM BOOT_CFLAGS="$DEBUG_FLAGS" CFLAGS="$DEBUG_FLAGS" CXXFLAGS="$DEBUG_FLAGS" AR_FOR_TARGET="$thisdir/wrappers/6502-ar" RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $MAKETARGET
 make RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $INSTALLTARGET
 set +e
 popd
@@ -84,7 +85,7 @@ mkdir gcc-build-2
 pushd gcc-build-2
 ../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=/usr/bin/ca65 --with-ld=/usr/bin/ld65 --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl
 set -e
-make -j 8 BOOT_CFLAGS="$DEBUG_FLAGS" CFLAGS="$DEBUG_FLAGS" CXXFLAGS="$DEBUG_FLAGS" AR_FOR_TARGET="$thisdir/wrappers/6502-ar" RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $MAKETARGET
+make $PARALLELISM BOOT_CFLAGS="$DEBUG_FLAGS" CFLAGS="$DEBUG_FLAGS" CXXFLAGS="$DEBUG_FLAGS" AR_FOR_TARGET="$thisdir/wrappers/6502-ar" RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $MAKETARGET
 make RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $INSTALLTARGET
 set +e
 popd
