@@ -31,7 +31,7 @@ lastpage:
 	beq done
 lploop:
 	dey
-	sta (%0),y
+	sta (_r0),y
 	bne lploop
 
 done:
