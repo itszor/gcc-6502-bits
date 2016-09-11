@@ -41,6 +41,8 @@ CC65_PATH="${CC65_PATH:-/usr/bin}"
 CA65_PATH="${CC65_PATH}/ca65"
 LD65_PATH="${CC65_PATH}/ld65"
 
+MORE_OPTIONS="--enable-checking"
+
 if [ "$startpos" -le 1 ]; then
 rm -rf gcc-build
 mkdir gcc-build
@@ -50,7 +52,7 @@ echo "* Building stage 1 compiler *"
 echo "*****************************"
 echo
 pushd gcc-build
-../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=${CA65_PATH} --with-ld=${LD65_PATH} --without-headers --with-newlib --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl
+../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=${CA65_PATH} --with-ld=${LD65_PATH} --without-headers --with-newlib --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl $MORE_OPTIONS
 cat > do-make.sh << EOF
 #!/bin/bash
 set -e
@@ -91,10 +93,14 @@ echo
 rm -rf gcc-build-2
 mkdir gcc-build-2
 pushd gcc-build-2
-../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=${CA65_PATH} --with-ld=${LD65_PATH} --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl
+../gcc-src/configure --prefix="$thisdir/prefix" --with-sysroot="$thisdir/prefix/6502" --with-build-sysroot="$thisdir/prefix/6502" --target=6502 --enable-languages=c --with-as=${CA65_PATH} --with-ld=${LD65_PATH} --disable-nls --disable-decimal-float --disable-libssp --disable-threads --disable-libatomic --disable-libitm --disable-libsanitizer --disable-libquadmath --disable-lto --enable-sjlj-exceptions --without-isl $MORE_OPTIONS
+cat > do-make.sh << EOF
+#!/bin/bash
 set -e
 make $PARALLELISM BOOT_CFLAGS="$DEBUG_FLAGS" CFLAGS="$DEBUG_FLAGS" CXXFLAGS="$DEBUG_FLAGS" AR_FOR_TARGET="$thisdir/wrappers/6502-ar" RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $MAKETARGET
 make RANLIB_FOR_TARGET="$thisdir/wrappers/6502-ranlib" $INSTALLTARGET
-set +e
+EOF
+chmod +x do-make.sh
+./do-make.sh || exit 1
 popd
 fi

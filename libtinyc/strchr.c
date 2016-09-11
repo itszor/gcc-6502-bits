@@ -3,11 +3,15 @@
 char *
 strchr (const char *s, int c)
 {
-  for (; *s != '\0'; s++)
+  char thechar;
+  do
     {
-      if (*s == c)
+      thechar = *s;
+      if (thechar == c)
         return (char *) s;
+      s++;
     }
+  while (thechar != '\0');
   
   return NULL;
 }
