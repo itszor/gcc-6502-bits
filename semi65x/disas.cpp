@@ -79,14 +79,20 @@ static const char *softregs[] =
   "_sp0", "_sp1", "_fp0", "_fp1",
   "_r0", "_r1", "_r2", "_r3", "_r4", "_r5", "_r6", "_r7",
   "_s0", "_s1", "_s2", "_s3", "_s4", "_s5", "_s6", "_s7",
-  "_tmp0", "_tmp1"
+  "_e0", "_e1", "_e2", "_e3", "_e4", "_e5", "_e6", "_e7",
+  "_e8", "_e9", "_e10", "_e11", "_e12", "_e13", "_e14", "_e15",
+  "_e16", "_e17", "_e18", "_e19", "_e20", "_e21", "_e22", "_e23",
+  "_e24", "_e25", "_e26", "_e27", "_e28", "_e29", "_e30", "_e31",
+  "_tmp0", "_tmp1", "_sa", "_sx", "_sy"
 };
 
-static int softreg_base = 0;
+#define ARRAYLEN(X) (sizeof(X) / sizeof(X[0]))
 
-static const char *fancy_name (int regnum)
+static unsigned softreg_base = 0;
+
+static const char *fancy_name (unsigned regnum)
 {
-  if (regnum >= softreg_base && regnum < softreg_base + 22)
+  if (regnum >= softreg_base && regnum < softreg_base + ARRAYLEN (softregs))
     return softregs[regnum - softreg_base];
 
   return NULL;

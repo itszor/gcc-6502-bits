@@ -33,7 +33,7 @@ set_board_info compiler  "[find_gcc]"
 
 # We only support newlib on this target. We assume that all multilib
 # options have been specified before we get here.
-set_board_info cflags  ""
+set_board_info cflags  "-mcpu=65C02"
 
 # We put the stack in the code segment, so trampolines work; the mmix
 # simulator does not allow code to be executed in the "normal" documented
@@ -46,7 +46,7 @@ set_board_info ldflags ""
 set_board_info ldscript ""
 
 # Pass remaining options directly to simulator
-set_board_info sim,options "-c 6502 -l 0x200"
+set_board_info sim,options "-c 65C02 -l 0x200"
 
 # Return codes aren't supported by the simulator.
 unset_board_info needs_status_wrapper

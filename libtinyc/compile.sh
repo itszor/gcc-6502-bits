@@ -47,6 +47,7 @@ OBJECTS=(
   strncpy
   ftoa
   alloc
+  fwrite
 )
 
 set -e
