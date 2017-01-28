@@ -134,8 +134,9 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 
 	    case 's':
 	      {
-		char *str = va_arg (ap, char *);
-		fputs (str, f);
+		char *str = va_arg (ap, char *), *iter;
+		for (iter = str; *iter; iter++)
+		  emit_char (*iter, f);
                 printed += strlen (str);
 	      }
 	      break;
