@@ -20,9 +20,9 @@ emit_char (int c, FILE *f)
 
 #define M65X_FLOAT_PRINT
 
-static int print_udec (FILE *f, unsigned int val)
+static int print_udec (FILE *f, unsigned long val)
 {
-  char digits[5];
+  char digits[10];
   int c = 0;
   int printed = 0;
   
@@ -32,7 +32,7 @@ static int print_udec (FILE *f, unsigned int val)
       val = val / 10;
     }
   while (val > 0);
-  
+
   for (--c; c >= 0; c--)
     {
       emit_char (digits[c] + '0', f);
@@ -42,7 +42,7 @@ static int print_udec (FILE *f, unsigned int val)
   return printed;
 }
 
-static int print_sdec (FILE *f, int val)
+static int print_sdec (FILE *f, long val)
 {
   int printed = 0;
   if (val < 0)
@@ -56,15 +56,15 @@ static int print_sdec (FILE *f, int val)
   return printed;
 }
 
-static int print_hex (FILE *f, unsigned int val)
+static int print_hex (FILE *f, unsigned long val)
 {
   unsigned char seen_nonzero = 0;
   int printed = 0;
   int i;
   
-  for (i = 3; i >= 0; i--)
+  for (i = 7; i >= 0; i--)
     {
-      unsigned char nybble = (val >> 12) & 0xf;
+      unsigned char nybble = (val >> 28) & 0xf;
       
       if (nybble > 0 || i == 0 || seen_nonzero)
         {
@@ -108,6 +108,7 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
     {
       if (*fmt == '%')
         {
+	retry:
 	  switch (*++fmt)
 	    {
             case 'c':
@@ -117,6 +118,37 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
                 printed++;
               }
               break;
+
+	    case 'l':
+	      {
+	        switch (*++fmt)
+		  {
+		  case 'd':
+		    {
+		      long val = va_arg (ap, long);
+		      printed += print_sdec (f, val);
+		    }
+		    break;
+
+		  case 'u':
+		    {
+		      unsigned long val = va_arg (ap, unsigned long);
+		      printed += print_udec (f, val);
+		    }
+		    break;
+
+		  case 'x':
+		    {
+		      unsigned long val = va_arg (ap, unsigned long);
+		      printed += print_hex (f, val);
+		    }
+		    break;
+
+		  default:
+		    ;
+		  }
+	      }
+	      break;
 
 	    case 'd':
 	      {
@@ -144,7 +176,7 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	    case 'p':
 	    case 'x':
 	      {
-	        int val = va_arg (ap, int);
+	        unsigned int val = va_arg (ap, unsigned int);
 		printed += print_hex (f, val);
 	      }
 	      break;
@@ -163,7 +195,8 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 	      break;
 #endif
 	    default:
-	      ;
+	      /* Just skip unknown % formatting codes.  */
+	      goto retry;
 	    }
 	}
       else
