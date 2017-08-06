@@ -1,5 +1,6 @@
 #!/bin/sh
-AR65=/usr/bin/ar65
+CC65_PATH=${CC65_PATH:-/usr/bin}
+AR65=${CC65_PATH}/ar65
 ARG=$1
 case "$ARG" in
   "rc"|"cr")
@@ -9,4 +10,4 @@ case "$ARG" in
     ;;
 esac
 shift
-exec /usr/bin/ar65 $ARG $@
+exec ${AR65} $ARG $@
