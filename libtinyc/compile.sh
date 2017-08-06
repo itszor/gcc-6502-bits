@@ -1,4 +1,8 @@
 #!/bin/bash
+
+CC65_PATH=${CC65_PATH:-/usr/bin}
+AR65_PATH=${CC65_PATH}/ar65
+
 cd "$(dirname $0)"
 
 if [ ! "$PREFIX" ]; then
@@ -131,14 +135,14 @@ for mlib in "${MULTILIBS[@]}"; do
 	;;
     esac
     $TARGET-gcc -Os -Wall -nostdlib -I include $opts "$src" -c -o "$osdir/$obj.o"
-    ar65 a "$osdir/libtinyc.a" "$osdir/$obj.o"
+    ${AR65_PATH} a "$osdir/libtinyc.a" "$osdir/$obj.o"
   done
 
   # Build tiny maths library.
   rm -f "$osdir"/libm.a
   src="$(src_for_machine "$osdir" "math")"
   $TARGET-gcc -Os -nostdlib $opts "$src" -c -o "$osdir/math.o"
-  ar65 a "$osdir/libm.a" "$osdir/math.o"
+  ${AR65_PATH} a "$osdir/libm.a" "$osdir/math.o"
 
   mkdir -p "$PREFIX/$TARGET/$osdir/usr/lib/"
   cp -f "$osdir/libtinyc.a" "$PREFIX/$TARGET/$osdir/usr/lib"

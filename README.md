@@ -6,20 +6,37 @@ Build tools, tiny C library, etc. for gcc-6502 port.
 Prerequisites
 -------------
 
-You need to install cc65 in /usr (so ca65, ld65 and so on are present in /usr/bin/ca65 etc.) before building. On a
-Debian system you should also have all the prerequisites for building GCC installed, e.g.:
+**Install the cc65 compiler suite**
 
+Most Linux distributions have a prepackaged cc65, but often it is outdated. Should you run into issues, build the latest version from https://github.com/cc65/cc65.git
+
+**Install the prerequisites for building GCC**
+
+    For Debian-based distros:
     # apt-get build-dep gcc-4.8
 
-or similar.
+    For RedHat-based distros:
+    # yum install -y gcc gcc-c++ mpfr-devel gmp-devel libmpc-devel flex
+
+**Install Boost development libraries**
 
 For semi65x (the included simulator), you also need Boost development libraries:
 
+    For Debian-based distros:
     # apt-get install libboost-dev libboost-regex-dev
+    
+    For RedHat-based distros:
+    # yum install -y boost boost-devel
+
+**Install DejaGNU (optional)**
 
 For running the GCC regression tests you will need to have DejaGNU installed:
 
+    For Debian-based distros:
     # apt-get install dejagnu
+    
+    For RedHat-based distros:
+    # yum install -y dejagnu
 
 Work in progress
 ----------------
@@ -38,6 +55,10 @@ Check out this repository, and check out the GCC repository proper as a subdirec
 Now build by running the build.sh script, e.g. as:
 
     $ ./build.sh 2>&1 | tee build.log
+
+The default location for cc65 binaries is in /usr (so ca65, ld65 and so on are present in /usr/bin/ca65, etc). If installed in another location, set the CC65_PATH variable to the path where the binaries exist. For example:
+
+    $ CC65_PATH=/usr/local/cc65/bin build.sh ...
 
 After a while, you should have a 6502 cross-compiler in a directory named 'prefix'.
 
