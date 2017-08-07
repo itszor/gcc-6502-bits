@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <vector>
 
 #include "semi65x.h"
 #include "6502core.h"
@@ -88,6 +89,73 @@ print_flags (FILE *f, int flags)
   fputc (flags & FlagC ? 'C' : 'c', f);
 }
 
+class watchinfo
+{
+public:
+  watchinfo(unsigned int size, unsigned long addr) : addr(addr), size(size)
+    {
+      prev = getmem(size, addr);
+    }
+
+  unsigned int getbyte(unsigned long addr)
+    {
+      return BeebReadMem(addr);
+    }
+
+  unsigned int getword(unsigned long addr)
+    {
+      return BeebReadMem(addr) | (BeebReadMem(addr + 1) << 8);
+    }
+
+  unsigned int getdword(unsigned long addr)
+    {
+      return BeebReadMem(addr) | (BeebReadMem(addr + 1) << 8)
+	     | (BeebReadMem(addr + 2) << 16) | (BeebReadMem(addr + 3) << 24);
+    }
+
+  unsigned int getmem(unsigned int size, unsigned long addr)
+    {
+      switch (size)
+	{
+	case 1: return getbyte(addr);
+	case 2: return getword(addr);
+	case 4: return getdword(addr);
+	}
+      return -1;
+    }
+
+  void update()
+    {
+      prev = getmem(size, addr);
+    }
+
+  void show_diff(FILE *f)
+    {
+      unsigned int curr = getmem(size, addr);
+      if (curr != prev)
+        {
+	  switch (size)
+            {
+	    case 1:
+	      fprintf (f, " [%.4lx]=%.2x->%.2x", addr, prev, curr);
+	      break;
+	    case 2:
+	      fprintf (f, " [%.4lx]=%.4x->%.4x", addr, prev, curr);
+	      break;
+	    case 4:
+	      fprintf (f, " [%.4lx]=%.8x->%.8x", addr, prev, curr);
+	      break;
+	    }
+	  prev = curr;
+	}
+    }
+
+private:
+  unsigned long addr;
+  unsigned int prev;
+  unsigned int size;
+};
+
 int
 main (int argc, char* argv[])
 {
@@ -98,7 +166,9 @@ main (int argc, char* argv[])
   struct stat statbuf;
   bool verbose = false;
   bool trace = false;
+  bool watch = false;
   const char *mapfile = NULL;
+  std::vector<watchinfo> watchpoints;
 
   MachineType = 1;
 
@@ -129,6 +199,35 @@ main (int argc, char* argv[])
 	trace = true;
       else if (strcmp (argv[arg], "-m") == 0)
         mapfile = argv[++arg];
+      else if (strncmp (argv[arg], "-w", 2) == 0)
+	{
+	  int watchsize = 0;
+	  switch (argv[arg][2])
+	    {
+	    case 'b':
+	      watchsize = 1;
+	      break;
+	    case 'w':
+	    case 'h':
+	      watchsize = 2;
+	      break;
+	    case 'l':
+	    case 'd':
+	      watchsize = 4;
+	      break;
+	    default:
+	      fprintf (stderr, "Watch what? (Use b/[wh]/[ld])\n");
+	      exit (1);
+	    }
+	  unsigned long watchaddr = strtoul (argv[++arg], NULL, 0);
+	  if (verbose)
+	    fprintf (stderr, "Watching %s at 0x%.4lx\n",
+		     watchsize == 1 ? "byte" :
+		     watchsize == 2 ? "word" :
+		     watchsize == 4 ? "long" : "?", watchaddr);
+	  watch = true;
+	  watchpoints.emplace_back(watchsize, watchaddr);
+	}
       else
         {
 	  FILE *f;
@@ -181,6 +280,9 @@ main (int argc, char* argv[])
   BeebWriteMem (0xfffc, exec_addr & 255);
   BeebWriteMem (0xfffd, (exec_addr >> 8) & 255);
 
+  for (auto &wb : watchpoints)
+    wb.update();
+
   Init6502core ();
 
   /* Do the math!  */
@@ -195,9 +297,16 @@ main (int argc, char* argv[])
 	  print_flags (stderr, PSR);
 	  fputc (' ', stderr);
 	  disassemble_insn (stderr, ProgramCounter, &WholeRam[ProgramCounter]);
-	  fprintf (stderr, "\n");
+	  if (!watch)
+	    fprintf (stderr, "\n");
 	}
       Exec6502Instruction ();
+      if (trace && watch)
+        {
+	  for (auto &wp : watchpoints)
+	    wp.show_diff(stderr);
+	  fprintf (stderr, "\n");
+	}
     }
   
   return 0;
