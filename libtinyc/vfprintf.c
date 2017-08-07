@@ -18,6 +18,15 @@ emit_char (int c, FILE *f)
     }
 }
 
+/* A version of fputs that knows about the __m65x_char_to_file hack.  */
+static void
+sfputs (const char *str, FILE *f)
+{
+  const char *iter;
+  for (iter = str; *iter; iter++)
+    emit_char (*iter, f);
+}
+
 #define M65X_FLOAT_PRINT
 
 static int print_udec (FILE *f, unsigned long val)
@@ -91,7 +100,7 @@ print_float (FILE *f, float x)
   int printed = 0;
   char output[16];
   exp = __m65x_ftoa (&output[0], x);
-  fputs (output, f);
+  sfputs (output, f);
   printed = strlen (output);
   if (exp != 0)
     printed += fprintf (f, "E%d", exp);
@@ -166,9 +175,8 @@ int vfprintf (FILE *f, const char *fmt, va_list ap)
 
 	    case 's':
 	      {
-		char *str = va_arg (ap, char *), *iter;
-		for (iter = str; *iter; iter++)
-		  emit_char (*iter, f);
+		char *str = va_arg (ap, char *);
+		sfputs (str, f);
                 printed += strlen (str);
 	      }
 	      break;
