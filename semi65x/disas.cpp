@@ -13,7 +13,7 @@ static const char *opcodes[] =
   "clc", "ora", "inc", "$1b", "trb", "ora", "asl", "$1f",
   /* 0x20 */
   "jsr", "and", "$22", "$23", "bit", "and", "rol", "$27",
-  "plp", "and", "dec", "$2b", "bit", "and", "rol", "$2f",
+  "plp", "and", "rol", "$2b", "bit", "and", "rol", "$2f",
   /* 0x30 */
   "bmi", "and", "and", "$33", "bit", "and", "rol", "$37",
   "sec", "and", "dec", "$3b", "bit", "and", "rol", "$3f",
