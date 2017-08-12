@@ -60,4 +60,4 @@ set_board_info gcc,timeout 30
 
 # Setting this makes several tests use smaller data structures. Size is
 # arbitrary!
-set_board_info gcc,stack_size 16384
+set_board_info gcc,stack_size 8192
