@@ -48,6 +48,7 @@ OBJECTS=(
   ftoa
   alloc
   fwrite
+  rand
 )
 
 set -e
