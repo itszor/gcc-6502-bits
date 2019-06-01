@@ -46,11 +46,9 @@ This is a work-in-progress compiler, and many bugs remain. You can build code fo
 Building
 --------
 
-Check out this repository, and check out the GCC repository proper as a subdirectory named "gcc-src":
+Check out this repository *recursively*:
 
-    $ git clone https://github.com/puppeh/gcc-6502-bits.git
-    $ cd gcc-6502-bits
-    $ git clone https://github.com/puppeh/gcc-6502.git gcc-src
+    $ git clone --recursive https://github.com/itszor/gcc-6502-bits.git
 
 Now build by running the build.sh script, e.g. as:
 

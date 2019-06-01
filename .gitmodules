@@ -1,3 +1,3 @@
 [submodule "gcc-src"]
 	path = gcc-src
-	url = http://www.github.com/puppeh/gcc-6502
+	url = http://www.github.com/itszor/gcc-6502
