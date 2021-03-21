@@ -56,7 +56,7 @@ unset_board_info needs_status_wrapper
 set_board_info gdb,nosignals 1
 
 # The simulator's going to crash. Try to make it at least do it quickly.
-set_board_info gcc,timeout 30
+set_board_info gcc,timeout 120
 
 # Setting this makes several tests use smaller data structures. Size is
 # arbitrary!
